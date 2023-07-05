@@ -66,10 +66,11 @@ public class MainApp extends Application {
         }
     }
 
-    public void showPersonEditDialog(Person person) {
+
+    public void showPersonEditDialog() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainApp.class.getResource("../vista/PersonEditDialog.fxml"));
+            loader.setLocation(MainApp.class.getResource("../view/PersonEditDialog.fxml"));
             AnchorPane page = (AnchorPane) loader.load();
 
             // Create the dialog Stage.
@@ -82,7 +83,7 @@ public class MainApp extends Application {
 
             PersonEditDialogController controller = loader.getController();
             controller.setDialogStage(dialogStage);
-            controller.setPerson(person);
+           // controller.setPerson(person);
 
             dialogStage.showAndWait();
         }catch (Exception e){

@@ -7,6 +7,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import util.AgendaEntity;
+
+import javax.persistence.EntityManager;
+import java.time.format.DateTimeFormatter;
 
 public class PersonEditDialogController {
 
@@ -36,17 +40,6 @@ public class PersonEditDialogController {
         this.dialogStage = dialogStage;
     }
 
-    public void setPerson(Person person) {
-        this.person = person;
-
-        firstNameField.setText(person.getFirstName());
-        lastNameField.setText(person.getLastName());
-        streetField.setText(person.getStreet());
-        postalCodeField.setText(person.getPostalCode());
-        cityField.setText(person.getCity());
-        birthdayField.setText(person.getBirthday());
-    }
-
     public boolean isOkClicked() {
         return okClicked;
     }
@@ -54,16 +47,34 @@ public class PersonEditDialogController {
     @FXML
     private void handleOk() {
         if (isInputValid()) {
+
+            EntityManager em = AgendaEntity.getEntityManager();
+            Person person = new Person();
+
             person.setFirstName(firstNameField.getText());
             person.setLastName(lastNameField.getText());
             person.setStreet(streetField.getText());
-            person.setPostalCode(person.getPostalCode());
             person.setCity(cityField.getText());
-            person.setBirthday(person.getBirthday());
+            person.setPostalCode(postalCodeField.getText());
+            person.setBirthday(birthdayField.getText());
 
-            okClicked = true;
-            dialogStage.close();
+            try {
+                em.getTransaction().begin();
+                em.persist(person);
+                em.getTransaction().commit();
+                Alert alert = new Alert(AlertType.INFORMATION);
+                PersonOverviewController personOverviewController = new PersonOverviewController();
+                personOverviewController.listPerson();
+                alert.setContentText("Persona Agregada");
+                alert.showAndWait();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                dialogStage.close();
+                em.close();
+            }
         }
+
     }
 
     @FXML

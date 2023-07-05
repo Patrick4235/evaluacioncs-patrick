@@ -106,12 +106,17 @@ public class PersonOverviewController {
     @FXML
     private void btnNewPerson() {
 
+        MainApp mainApp = new MainApp();
+
+        mainApp.showPersonEditDialog();
+
     }
 
     @FXML
     private void btnEditPerson() {
 
     }
+
 
 
 
