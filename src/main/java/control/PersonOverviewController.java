@@ -117,6 +117,10 @@ public class PersonOverviewController {
 
     }
 
+    public void updateListPerson(){
+        this.listPerson();
+    }
+
 
 
 

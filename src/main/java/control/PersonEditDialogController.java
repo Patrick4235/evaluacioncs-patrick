@@ -63,8 +63,6 @@ public class PersonEditDialogController {
                 em.persist(person);
                 em.getTransaction().commit();
                 Alert alert = new Alert(AlertType.INFORMATION);
-                PersonOverviewController personOverviewController = new PersonOverviewController();
-                personOverviewController.listPerson();
                 alert.setContentText("Persona Agregada");
                 alert.showAndWait();
             } catch (Exception e) {
