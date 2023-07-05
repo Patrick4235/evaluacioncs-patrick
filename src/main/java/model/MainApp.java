@@ -1,44 +1,92 @@
 package model;
 
 import java.io.IOException;
+import control.PersonEditDialogController;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import control.PersonOverviewController;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-/**
- *
- * @author estudiante
- */
 public class MainApp extends Application {
     
     private Stage primaryStage;
+    private BorderPane rootLayout;
 
     @Override
     public void start(Stage primaryStage)
 
     {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Matricula");
+        this.primaryStage.setTitle("Agenda");
 
-        mostrarAgenda();
+        initRootLayout();
+
+        showPersonOverview();
     }
-    private void mostrarAgenda()
-    {
+
+    public void initRootLayout() {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainApp.class.getResource("../view/RootLayout.fxml"));
+            rootLayout = (BorderPane) loader.load();
+
+            Scene scene = new Scene(rootLayout);
+            primaryStage.setScene(scene);
+
+            primaryStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showPersonOverview() {
         try{
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(this.getClass().getResource("/Visual/Borde.fxml"));
-            BorderPane Margen = (BorderPane) loader.load();
+            loader.setLocation(MainApp.class.getResource("/view/PersonOverview.fxml"));
+            AnchorPane personOverview = (AnchorPane) loader.load();
 
-            Scene scene = new Scene(Margen);
-            primaryStage.setScene(scene);
-            primaryStage.show();
+            // Set person overview into the center of root layout.
+            rootLayout.setCenter(personOverview);
+
+            PersonOverviewController controller = loader.getController();
+            controller.setMainApp(this);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        catch(IOException e){
-            System.out.println(e.getMessage());
+    public void showPersonEditDialog(Person person) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainApp.class.getResource("../vista/PersonEditDialog.fxml"));
+            AnchorPane page = (AnchorPane) loader.load();
+
+            // Create the dialog Stage.
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Person");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(primaryStage);
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            PersonEditDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setPerson(person);
+
+            dialogStage.showAndWait();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

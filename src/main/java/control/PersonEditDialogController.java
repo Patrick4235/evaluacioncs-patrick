@@ -1,6 +1,6 @@
-package agenda.vista;
+package control;
 
-import agenda.control.Person;
+import model.Person;
 import agenda.util.DateUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -42,10 +42,9 @@ public class PersonEditDialogController {
         firstNameField.setText(person.getFirstName());
         lastNameField.setText(person.getLastName());
         streetField.setText(person.getStreet());
-        postalCodeField.setText(Integer.toString(person.getPostalCode()));
+        postalCodeField.setText(person.getPostalCode());
         cityField.setText(person.getCity());
-        birthdayField.setText(DateUtil.format(person.getBirthday()));
-        birthdayField.setPromptText("dd.mm.yyyy");
+        birthdayField.setText(person.getBirthday());
     }
 
     public boolean isOkClicked() {
@@ -58,9 +57,9 @@ public class PersonEditDialogController {
             person.setFirstName(firstNameField.getText());
             person.setLastName(lastNameField.getText());
             person.setStreet(streetField.getText());
-            person.setPostalCode(Integer.parseInt(postalCodeField.getText()));
+            person.setPostalCode(person.getPostalCode());
             person.setCity(cityField.getText());
-            person.setBirthday(DateUtil.parse(birthdayField.getText()));
+            person.setBirthday(person.getBirthday());
 
             okClicked = true;
             dialogStage.close();

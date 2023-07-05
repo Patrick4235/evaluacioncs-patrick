@@ -3,8 +3,8 @@ package control;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.MainApp;
 import model.Person;
-import agenda.util.DateUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -14,7 +14,6 @@ import javafx.scene.control.TableView;
 import util.AgendaEntity;
 
 import javax.persistence.EntityManager;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -28,7 +27,7 @@ public class PersonOverviewController {
     @FXML private Label streetLabel;
     @FXML private Label postalCodeLabel;
     @FXML private Label cityLabel;
-    @FXML private Label birthdayLabel = new Label("");
+    @FXML private Label birthdayLabel;
 
     private List<Person> persons;
 
@@ -36,12 +35,15 @@ public class PersonOverviewController {
     private void initialize() {
         showPersonDetails(null);
 
+        listPerson();
+
         personTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showPersonDetails(newValue));
     }
 
     public void listPerson(){
         EntityManager em = AgendaEntity.getEntityManager();
+
         firstNameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getFirstName())); ;
         lastNameColumn.setCellValueFactory(param -> new ReadOnlyStringWrapper(param.getValue().getLastName()));
 
@@ -49,18 +51,27 @@ public class PersonOverviewController {
         persons  = em.createQuery(jpql, Person.class).getResultList();
         ObservableList<Person> obPerson = FXCollections.observableArrayList(persons);
         personTable.setItems(obPerson);
+
         em.close();
     }
 
     private void showPersonDetails(Person person) {
+        EntityManager em = AgendaEntity.getEntityManager();
+
+        person = personTable.getSelectionModel().getSelectedItem();
+
         if (person != null) {
-            firstNameLabel.setText(person.getFirstName());
-            lastNameLabel.setText(person.getLastName());
-            streetLabel.setText(person.getStreet());
-            postalCodeLabel.setText(person.getPostalCode()));
-            cityLabel.setText(person.getCity());
-            birthdayLabel.setText(person.getBirthday());
-        } else {
+            String jpql = "SELECT p FROM Person AS p WHERE p.id =: id";
+            Person personSelected = em.createQuery(jpql, Person.class).setParameter("id", person.getId()).getSingleResult();
+
+            firstNameLabel.setText(personSelected.getFirstName());
+            lastNameLabel.setText(personSelected.getLastName());
+            streetLabel.setText(personSelected.getStreet());
+            postalCodeLabel.setText(personSelected.getPostalCode());
+            cityLabel.setText(personSelected.getCity());
+            birthdayLabel.setText(personSelected.getBirthday());
+        }
+        else {
             firstNameLabel.setText("");
             lastNameLabel.setText("");
             streetLabel.setText("");
@@ -68,75 +79,42 @@ public class PersonOverviewController {
             cityLabel.setText("");
             birthdayLabel.setText("");
         }
+
+        em.close();
+
     }
     @FXML
     private void btnDeletePerson() {
-        int selectedIndex = personTable.getSelectionModel().getSelectedIndex();
-        if (selectedIndex >= 0) {
-            personTable.getItems().remove(selectedIndex);
-        } else {
+        EntityManager em = AgendaEntity.getEntityManager();
+        Person personSelected = personTable.getSelectionModel().getSelectedItem();
+
+        if (personSelected != null) {
+            String jpql = "DELETE FROM Person FROM Person AS p WHERE p.id =: id";
+            Person personToDelete = em.createQuery(jpql, Person.class).setParameter("id", personSelected.getId()).getSingleResult();
+        }
+        else {
             Alert alert = new Alert(AlertType.WARNING);
-            alert.initOwner(mainApp.getPrimaryStage());
             alert.setTitle("Error");
             alert.setHeaderText("No person selected");
 
             alert.showAndWait();
         }
+
+        em.close();
     }
 
     @FXML
     private void btnNewPerson() {
-        EntityManager em = AgendaEntity.getEntityManager();
-        Person person = new Person();
 
-        person.setFirstName(firstNameColumn.getText());
-        person.setLastName(lastNameColumn.getText());
-        person.setApellidos(txtApellidos.getText());
-        person.setGrado(cbGrado.getValue());
-        person.setFechaNacimiento(dpFechaNacimiento.getValue().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-
-        try {
-            em.getTransaction().begin();
-            em.persist(estudiante);
-            em.getTransaction().commit();
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setContentText("Estudiante Agregado");
-            alert.showAndWait();
-            listarEstudiantes();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            em.close();
-        }
     }
 
     @FXML
-    private void handleEditPerson() {
-        Person selectedPerson = personTable.getSelectionModel().getSelectedItem();
-        if (selectedPerson != null) {
-            boolean okClicked = mainApp.showPersonEditDialog(selectedPerson);
-            if (okClicked) {
-                showPersonDetails(selectedPerson);
-            }
+    private void btnEditPerson() {
 
-        } else {
-            // Nothing selected.
-            Alert alert = new Alert(AlertType.WARNING);
-            alert.initOwner(mainApp.getPrimaryStage());
-            alert.setTitle("No Selection");
-            alert.setHeaderText("No Person Selected");
-            alert.setContentText("Please select a person in the table.");
-
-            alert.showAndWait();
-        }
     }
 
 
 
     public void setMainApp(MainApp mainApp) {
-        this.mainApp = mainApp;
-
-        // Add observable list data to the table
-        personTable.setItems(mainApp.getPersonData());
     }
 }
